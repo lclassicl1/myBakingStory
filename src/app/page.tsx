@@ -20,16 +20,20 @@ export default async function Home({ searchParams }: HomeProps) {
 
       <section className="hero-section" aria-labelledby="home-title">
         <div className="hero-section__copy">
-          <p className="eyebrow">Bake, share, remember</p>
-          <h1 id="home-title">오늘의 베이킹 이야기를 한눈에 모아보세요.</h1>
+          <p className="eyebrow">Bake stories</p>
+          <h1 id="home-title">오늘의 베이킹 이야기를 가볍게 둘러보세요.</h1>
           <p>
-            공지, 레시피, 자유로운 대화와 이벤트까지 최신 글을 게시판별로 빠르게 확인할 수 있습니다.
+            공지, 레시피, 이벤트와 커뮤니티 글을 한 화면에서 확인하고 로그인 후 바로 참여할 수 있습니다.
           </p>
         </div>
         <div className="hero-section__panel" aria-label="메인화면 표시 기준">
-          <span>게시판 {boardConfigs.length}개</span>
-          <strong>최신순 {MAIN_PREVIEW_LIMIT}개</strong>
-          <span>{viewer ? "내 레시피 표시 중" : "개인 레시피 비공개"}</span>
+          <div className="hero-section__swatches" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <strong>Warm, soft, mobile-first</strong>
+          <p>게시판 {boardConfigs.length}개 · 최신순 {MAIN_PREVIEW_LIMIT}개 · {viewer ? "내 레시피 표시 중" : "로그인 필요"}</p>
         </div>
       </section>
 
