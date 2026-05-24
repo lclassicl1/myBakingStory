@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { getAuthQuery, getViewerFromParams } from "@/lib/auth";
+import { getAuthQuery } from "@/lib/auth";
+import { getServerViewer } from "@/lib/auth-server";
 import { boardConfigs, getBoardByKey, getPostById } from "@/lib/boards";
 
 type PostPageProps = {
@@ -28,7 +29,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
   const { boardKey, postId } = await params;
   const query = await searchParams;
   const board = getBoardByKey(boardKey);
-  const viewer = getViewerFromParams(query);
+  const viewer = await getServerViewer(query);
   const authQuery = getAuthQuery(viewer);
   const post = getPostById(postId, { viewerId: viewer?.id });
 

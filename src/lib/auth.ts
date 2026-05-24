@@ -3,9 +3,13 @@ import type { BoardConfig } from "@/lib/boards";
 export type ViewerRole = "user" | "admin";
 
 export type Viewer = {
+  email?: string;
   id: string;
+  memberGrade?: string;
+  memberPoints?: number;
   name: string;
   role: ViewerRole;
+  useYn?: boolean;
 };
 
 type AuthParams = {
