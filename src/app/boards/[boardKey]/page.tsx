@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { getAuthQuery, getHrefWithAuth, getViewerFromParams } from "@/lib/auth";
+import { getAuthQuery, getHrefWithAuth } from "@/lib/auth";
+import { getServerViewer } from "@/lib/auth-server";
 import { boardConfigs, getBoardByKey, getBoardPosts } from "@/lib/boards";
 
 type BoardPageProps = {
@@ -31,7 +32,7 @@ export default async function BoardPage({ params, searchParams }: BoardPageProps
     notFound();
   }
 
-  const viewer = getViewerFromParams(query);
+  const viewer = await getServerViewer(query);
   const authQuery = getAuthQuery(viewer);
   const posts = getBoardPosts(board, { viewerId: viewer?.id });
 

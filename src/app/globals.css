@@ -533,6 +533,19 @@ button {
   line-height: 1.5;
 }
 
+.field-error {
+  margin: -4px 0 0;
+  color: var(--brand-strong);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.form-field input[aria-invalid="true"] {
+  border-color: var(--brand);
+  background: #fff7f3;
+}
+
 .auth-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 440px);

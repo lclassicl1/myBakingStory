@@ -4,7 +4,7 @@
 
 ## 목표
 
-myBakingStory의 인증은 Supabase Auth를 기준으로 구성한다. 초기 구현 범위는 화면과 라우트 구조를 먼저 만들고, 실제 Supabase 프로젝트 키와 Google/Kakao OAuth 설정은 이후 연결한다.
+myBakingStory의 인증은 Supabase Auth를 기준으로 구성한다. Supabase 프로젝트 키를 연결해 이메일 인증 흐름을 동작 가능한 구조로 구성하고, Google/Kakao OAuth는 Supabase Provider 설정이 끝나면 바로 provider 인증으로 이동하도록 준비한다.
 
 ## 인증 방식
 
@@ -12,9 +12,9 @@ myBakingStory의 인증은 Supabase Auth를 기준으로 구성한다. 초기 �
 
 | 방식 | 상태 | 비고 |
 | --- | --- | --- |
-| 이메일 회원가입/로그인 | 구조 구현 | Supabase 키 연결 후 실제 동작 |
-| Google 로그인 | 버튼/흐름 구현 | Google OAuth Client ID/Secret 필요 |
-| Kakao 로그인 | 버튼/흐름 구현 | Kakao REST API Key/Client Secret 필요 |
+| 이메일 회원가입/로그인 | 연결 완료 | Supabase Auth 사용 |
+| Google 로그인 | 버튼/흐름 연결 | Supabase Google Provider 설정 필요 |
+| Kakao 로그인 | 버튼/흐름 연결 | Supabase Kakao Provider 설정 필요 |
 | Apple 로그인 | 제외 | 현재 범위에서 제외 |
 
 ## 필요한 환경변수
@@ -34,7 +34,7 @@ Google/Kakao provider secret은 클라이언트 코드에 직접 넣지 않는�
 | --- | --- |
 | `/login` | 로그인 화면 |
 | `/signup` | 이메일 회원가입 화면 |
-| `/auth/callback` | OAuth 인증 후 돌아오는 콜백 화면 |
+| `/auth/callback` | OAuth 인증 후 돌아오는 콜백 Route Handler |
 
 ## Supabase 설정 예정
 
@@ -50,20 +50,14 @@ Supabase Dashboard에서 다음 설정이 필요하다.
 
 ## 현재 구현 정책
 
-- 실제 키가 없는 상태에서는 로그인/회원가입 form 제출 시 준비 중 메시지를 보여준다.
-- Google/Kakao 버튼은 provider 연결 전 상태임을 안내한다.
-- 화면 구조, 카피, 버튼 배치, 모바일 대응을 먼저 고정한다.
-- 이후 Supabase client와 server action을 붙이면서 현재 placeholder 동작을 실제 인증 호출로 교체한다.
+- 이메일 로그인/회원가입은 Supabase Server Action으로 처리한다.
+- Google/Kakao 버튼은 Supabase OAuth provider 호출로 연결되어 있다.
+- Provider 설정이 완료되지 않은 경우 Supabase에서 provider 설정 오류가 발생할 수 있다.
+- 인증 후 viewer 조회는 Supabase 세션을 우선 사용하고, 기존 query 기반 로그인은 개발 미리보기 용도로만 남긴다.
 
 ## 향후 교체 지점
 
-- 로그인 form submit
-  - `supabase.auth.signInWithPassword`
-- 회원가입 form submit
-  - `supabase.auth.signUp`
-- Google/Kakao 버튼
-  - `supabase.auth.signInWithOAuth`
-- `/auth/callback`
-  - Supabase code exchange 및 세션 쿠키 저장
-- 임시 query 로그인
-  - 실제 Supabase 세션 기반 viewer 조회로 교체
+- `profiles` 테이블 생성 및 role 정책 연결
+- Google/Kakao Provider 키 등록
+- 운영자 role을 DB 기준으로 조회
+- 임시 query 로그인은 실제 Supabase 세션 기반 viewer 조회가 안정화되면 제거

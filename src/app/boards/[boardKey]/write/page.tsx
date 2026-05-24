@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { canCreatePost, getAuthQuery, getViewerFromParams } from "@/lib/auth";
+import { canCreatePost, getAuthQuery } from "@/lib/auth";
+import { getServerViewer } from "@/lib/auth-server";
 import { boardConfigs, getBoardByKey } from "@/lib/boards";
 
 type BoardWritePageProps = {
@@ -33,7 +34,7 @@ export default async function BoardWritePage({ params, searchParams }: BoardWrit
     notFound();
   }
 
-  const viewer = getViewerFromParams(query);
+  const viewer = await getServerViewer(query);
   const authQuery = getAuthQuery(viewer);
   const canWrite = canCreatePost(board, viewer);
 

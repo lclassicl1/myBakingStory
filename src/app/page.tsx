@@ -1,6 +1,6 @@
 import { BoardPreviewSection } from "@/components/board-preview-section";
 import { PageHeader } from "@/components/page-header";
-import { getViewerFromParams } from "@/lib/auth";
+import { getServerViewer } from "@/lib/auth-server";
 import { boardConfigs, getBoardPreviews, MAIN_PREVIEW_LIMIT } from "@/lib/boards";
 
 type HomeProps = {
@@ -12,7 +12,7 @@ type HomeProps = {
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
-  const viewer = getViewerFromParams(params);
+  const viewer = await getServerViewer(params);
 
   return (
     <main className="app-shell">
