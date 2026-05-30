@@ -1,10 +1,5 @@
-import { getViewerFromParams, type Viewer } from "@/lib/auth";
+import type { Viewer } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-type AuthParams = {
-  login?: string;
-  role?: string;
-};
 
 type ProfileRow = {
   display_name: string;
@@ -15,13 +10,7 @@ type ProfileRow = {
   use_yn: boolean;
 };
 
-export async function getServerViewer(params?: AuthParams): Promise<Viewer | undefined> {
-  const previewViewer = getViewerFromParams(params);
-
-  if (previewViewer) {
-    return previewViewer;
-  }
-
+export async function getServerViewer(): Promise<Viewer | undefined> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

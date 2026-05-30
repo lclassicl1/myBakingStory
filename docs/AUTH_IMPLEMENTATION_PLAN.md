@@ -53,11 +53,9 @@ Supabase Dashboard에서 다음 설정이 필요하다.
 - 이메일 로그인/회원가입은 Supabase Server Action으로 처리한다.
 - Google/Kakao 버튼은 Supabase OAuth provider 호출로 연결되어 있다.
 - Provider 설정이 완료되지 않은 경우 Supabase에서 provider 설정 오류가 발생할 수 있다.
-- 인증 후 viewer 조회는 Supabase 세션을 우선 사용하고, 기존 query 기반 로그인은 개발 미리보기 용도로만 남긴다.
+- 인증 후 viewer 조회는 Supabase 세션과 `profiles` 테이블을 기준으로 처리한다.
 
 ## 향후 교체 지점
 
-- `profiles` 테이블 생성 및 role 정책 연결
 - Google/Kakao Provider 키 등록
-- 운영자 role을 DB 기준으로 조회
-- 임시 query 로그인은 실제 Supabase 세션 기반 viewer 조회가 안정화되면 제거
+- 로그아웃 이후 세션 쿠키 정리와 화면 상태가 안정적으로 유지되는지 지속 점검

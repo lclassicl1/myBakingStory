@@ -7,10 +7,10 @@ import {
   MessageCircle,
   NotebookTabs,
   PartyPopper,
-  type LucideIcon,
 } from "lucide-react";
+import type { ReactNode } from "react";
 
-import { canCreatePost, getHrefWithAuth, type Viewer } from "@/lib/auth";
+import { canCreatePost, type Viewer } from "@/lib/auth";
 import type { BoardConfig, PostPreview } from "@/lib/boards";
 import { ProtectedAction } from "@/components/protected-action";
 import { WriteActionButton } from "@/components/write-action-button";
@@ -21,33 +21,45 @@ type BoardPreviewSectionProps = {
   viewer?: Viewer;
 };
 
-const boardIconMap: Record<BoardConfig["key"], LucideIcon> = {
-  notice: Megaphone,
-  "public-recipes": ChefHat,
-  "private-recipes": NotebookTabs,
-  free: MessageCircle,
-  events: PartyPopper,
-  suggestions: Lightbulb,
-};
+function getBoardIcon(boardKey: BoardConfig["key"], size: number): ReactNode {
+  switch (boardKey) {
+    case "notice":
+      return <Megaphone aria-hidden="true" size={size} />;
+    case "public-recipes":
+      return <ChefHat aria-hidden="true" size={size} />;
+    case "private-recipes":
+      return <NotebookTabs aria-hidden="true" size={size} />;
+    case "free":
+      return <MessageCircle aria-hidden="true" size={size} />;
+    case "events":
+      return <PartyPopper aria-hidden="true" size={size} />;
+    case "suggestions":
+      return <Lightbulb aria-hidden="true" size={size} />;
+    default:
+      return <MessageCircle aria-hidden="true" size={size} />;
+  }
+}
 
-const boardModalToneMap: Record<BoardConfig["key"], "login" | "permission" | "private"> = {
-  notice: "permission",
-  "public-recipes": "login",
-  "private-recipes": "private",
-  free: "login",
-  events: "login",
-  suggestions: "login",
-};
+function getBoardModalTone(boardKey: BoardConfig["key"]): "login" | "permission" | "private" {
+  if (boardKey === "notice") {
+    return "permission";
+  }
+
+  if (boardKey === "private-recipes") {
+    return "private";
+  }
+
+  return "login";
+}
 
 export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectionProps) {
-  const boardHref = getHrefWithAuth(board.href, viewer);
-  const writeHref = getHrefWithAuth(`${board.href}/write`, viewer);
+  const boardHref = board.href;
+  const writeHref = `${board.href}/write`;
   const showWriteButton = Boolean(board.allowsWriting);
   const canWrite = canCreatePost(board, viewer);
   const canRead = Boolean(viewer);
   const readRequiredMessage = "로그인을 하지 않으면 볼 수 없습니다.";
-  const BoardIcon = boardIconMap[board.key];
-  const boardModalTone = boardModalToneMap[board.key];
+  const boardModalTone = getBoardModalTone(board.key);
   const writeRequiredMessage = !viewer
     ? "로그인을 하지 않으면 글을 작성할 수 없습니다."
     : "공지사항은 사이트 운영자만 작성할 수 있습니다.";
@@ -57,7 +69,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
       <div className="board-card__header">
         <div className="board-card__identity">
           <span className={`board-card__mark board-card__mark--${board.key}`} aria-hidden="true">
-            <BoardIcon size={20} />
+            {getBoardIcon(board.key, 20)}
           </span>
           <div>
             <h2 className="board-card__title" id={`${board.key}-title`}>
@@ -74,7 +86,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
               label={`${board.title} 글쓰기`}
               message={writeRequiredMessage}
               modalTone={!viewer ? boardModalTone : "permission"}
-              icon={<BoardIcon aria-hidden="true" size={24} />}
+              icon={getBoardIcon(board.key, 24)}
             />
           ) : null}
           <ProtectedAction
@@ -82,7 +94,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
             canAccess={canRead}
             className="icon-link"
             href={boardHref}
-            icon={<BoardIcon aria-hidden="true" size={24} />}
+            icon={getBoardIcon(board.key, 24)}
             label={`${board.title} 전체보기`}
             lockedClassName="icon-link icon-link--muted"
             message={readRequiredMessage}
@@ -102,7 +114,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
               actionHref="/login"
               canAccess={canRead && !post.isLocked}
               className="post-item__link"
-              href={getHrefWithAuth(`${board.href}/${post.id}`, viewer)}
+              href={`${board.href}/${post.id}`}
               label={`${post.title} 글 보기`}
               message={
                 post.isLocked
@@ -115,7 +127,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
                 post.isLocked ? (
                   <LockKeyhole aria-hidden="true" size={24} />
                 ) : (
-                  <BoardIcon aria-hidden="true" size={24} />
+                  getBoardIcon(board.key, 24)
                 )
               }
             >
@@ -129,9 +141,9 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
                 {!post.isLocked ? (
                   <span className="post-item__comments">
                     <MessageCircle aria-hidden="true" size={14} />
-                  {post.commentCount}
-                </span>
-              ) : null}
+                    {post.commentCount}
+                  </span>
+                ) : null}
               </span>
             </ProtectedAction>
           </li>

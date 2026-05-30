@@ -115,6 +115,12 @@ button {
   background: transparent;
 }
 
+.header-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .auth-nav__link {
   display: inline-flex;
   align-items: center;
@@ -130,6 +136,10 @@ button {
   font-size: 0.86rem;
   font-weight: 700;
   text-align: center;
+}
+
+.auth-nav__link--button {
+  cursor: pointer;
 }
 
 .auth-nav__link--active {
@@ -901,6 +911,18 @@ button {
     min-width: 0;
   }
 
+  .header-account {
+    width: 100%;
+  }
+
+  .header-account form {
+    flex: 1;
+  }
+
+  .header-account .auth-nav__link {
+    width: 100%;
+  }
+
   .auth-nav__link {
     flex: 1;
     min-height: 44px;
@@ -908,7 +930,7 @@ button {
 
   .user-chip {
     justify-content: center;
-    width: 100%;
+    flex: 1;
   }
 
   .hero-section {

@@ -136,3 +136,8 @@ UI는 DB 정책과 같은 권한 모델을 따라야 한다.
 - 회원 등급과 포인트
 - 운영자 공지/이벤트 관리
 
+## 현재 적용된 DB 기능
+
+- 회원 profile: [SUPABASE_PROFILES_TABLE.md](./SUPABASE_PROFILES_TABLE.md)
+- 게시판/게시글: [BOARD_POSTS_TABLES.md](./BOARD_POSTS_TABLES.md)
+

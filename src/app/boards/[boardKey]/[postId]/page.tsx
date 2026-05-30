@@ -3,18 +3,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { getAuthQuery } from "@/lib/auth";
 import { getServerViewer } from "@/lib/auth-server";
-import { boardConfigs, getBoardByKey, getPostById } from "@/lib/boards";
+import { getBoard, getPostForDetail } from "@/lib/board-data";
+import { boardConfigs } from "@/lib/boards";
+
+export const dynamic = "force-dynamic";
 
 type PostPageProps = {
   params: Promise<{
     boardKey: string;
     postId: string;
-  }>;
-  searchParams?: Promise<{
-    login?: string;
-    role?: string;
   }>;
 };
 
@@ -25,17 +23,16 @@ export function generateStaticParams() {
   }));
 }
 
-export default async function PostPage({ params, searchParams }: PostPageProps) {
+export default async function PostPage({ params }: PostPageProps) {
   const { boardKey, postId } = await params;
-  const query = await searchParams;
-  const board = getBoardByKey(boardKey);
-  const viewer = await getServerViewer(query);
-  const authQuery = getAuthQuery(viewer);
-  const post = getPostById(postId, { viewerId: viewer?.id });
+  const board = await getBoard(boardKey);
+  const viewer = await getServerViewer();
 
   if (!board) {
     notFound();
   }
+
+  const post = await getPostForDetail(board, postId, viewer);
 
   return (
     <main className="app-shell">
@@ -47,7 +44,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           <h1 id="post-title">{post?.title ?? "게시글"}</h1>
           <p>{board.description}</p>
         </div>
-        <Link className="text-link" href={`${board.href}${authQuery}`}>
+        <Link className="text-link" href={board.href}>
           게시판으로
         </Link>
       </section>
@@ -57,8 +54,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           <LockKeyhole aria-hidden="true" size={24} />
           <h2>로그인을 하지 않으면 볼 수 없습니다</h2>
           <p>게시글 내용을 보려면 먼저 로그인해 주세요.</p>
-          <Link className="text-link" href="/?login=1">
-            로그인 미리보기
+          <Link className="text-link" href="/login">
+            로그인하러 가기
           </Link>
         </section>
       ) : !post ? (
@@ -78,8 +75,7 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
             </span>
           </div>
           <p className="post-detail__body">
-            실제 게시글 본문은 Supabase 데이터 연동 단계에서 연결합니다. 지금은 메인화면과 게시판 흐름을
-            확인하기 위한 미리보기 화면입니다.
+            {post.content}
           </p>
         </article>
       )}
