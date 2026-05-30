@@ -1,18 +1,20 @@
 import { BoardPreviewSection } from "@/components/board-preview-section";
 import { PageHeader } from "@/components/page-header";
 import { getServerViewer } from "@/lib/auth-server";
-import { boardConfigs, getBoardPreviews, MAIN_PREVIEW_LIMIT } from "@/lib/boards";
+import { getBoardPreviewPosts, getBoards } from "@/lib/board-data";
+import { MAIN_PREVIEW_LIMIT } from "@/lib/boards";
 
-type HomeProps = {
-  searchParams?: Promise<{
-    login?: string;
-    role?: string;
-  }>;
-};
+export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }: HomeProps) {
-  const params = await searchParams;
-  const viewer = await getServerViewer(params);
+export default async function Home() {
+  const viewer = await getServerViewer();
+  const boards = await getBoards();
+  const boardPreviews = await Promise.all(
+    boards.map(async (board) => ({
+      board,
+      posts: await getBoardPreviewPosts(board, viewer),
+    })),
+  );
 
   return (
     <main className="app-shell">
@@ -27,7 +29,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </p>
         </div>
         <div className="home-summary" aria-label="메인화면 표시 기준">
-          <span>게시판 {boardConfigs.length}개</span>
+          <span>게시판 {boards.length}개</span>
           <span>최신순 {MAIN_PREVIEW_LIMIT}개</span>
           <span>{viewer ? "내 레시피 표시 중" : "로그인 후 참여 가능"}</span>
         </div>
@@ -42,11 +44,11 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
 
         <div className="board-grid">
-          {boardConfigs.map((board) => (
+          {boardPreviews.map(({ board, posts }) => (
             <BoardPreviewSection
               board={board}
               key={board.key}
-              posts={getBoardPreviews(board, { viewerId: viewer?.id })}
+              posts={posts}
               viewer={viewer}
             />
           ))}

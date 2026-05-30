@@ -10,6 +10,7 @@ export type BoardVisibility = "public" | "owner-only";
 export type BoardWritePermission = "admin" | "authenticated";
 
 export type BoardConfig = {
+  id?: string;
   key: BoardKey;
   title: string;
   description: string;
@@ -24,7 +25,9 @@ export type PostPreview = {
   boardKey: BoardKey;
   title: string;
   author: string;
+  content?: string;
   createdAt: string;
+  updatedAt?: string;
   commentCount: number;
   ownerId?: string;
   isLocked?: boolean;
@@ -365,4 +368,8 @@ export function getPostById(postId: string, { viewerId }: PreviewOptions = {}) {
   }
 
   return post;
+}
+
+export function getLockedRecipePreviews(limit = MAIN_PREVIEW_LIMIT) {
+  return lockedRecipePreviews.slice(0, limit);
 }

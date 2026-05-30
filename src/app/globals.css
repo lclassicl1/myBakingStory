@@ -115,6 +115,12 @@ button {
   background: transparent;
 }
 
+.header-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .auth-nav__link {
   display: inline-flex;
   align-items: center;
@@ -130,6 +136,10 @@ button {
   font-size: 0.86rem;
   font-weight: 700;
   text-align: center;
+}
+
+.auth-nav__link--button {
+  cursor: pointer;
 }
 
 .auth-nav__link--active {
@@ -516,6 +526,7 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 7px;
   min-height: 42px;
   padding: 10px 16px;
   border: 1px solid var(--line);
@@ -531,6 +542,19 @@ button {
   outline: none;
   border-color: var(--brand);
   color: var(--brand);
+}
+
+.secondary-button--danger {
+  color: var(--brand-strong);
+  border-color: #e5b6a9;
+  background: #fff7f3;
+}
+
+.secondary-button--danger:hover,
+.secondary-button--danger:focus-visible {
+  color: #ffffff;
+  border-color: var(--brand-strong);
+  background: var(--brand-strong);
 }
 
 .inline-notice {
@@ -695,8 +719,28 @@ button {
 
 .post-detail__body {
   margin: 0;
+  white-space: pre-wrap;
   color: var(--text);
   line-height: 1.8;
+}
+
+.post-management {
+  display: grid;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.post-management__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.delete-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
 }
 
 .modal-backdrop {
@@ -901,6 +945,18 @@ button {
     min-width: 0;
   }
 
+  .header-account {
+    width: 100%;
+  }
+
+  .header-account form {
+    flex: 1;
+  }
+
+  .header-account .auth-nav__link {
+    width: 100%;
+  }
+
   .auth-nav__link {
     flex: 1;
     min-height: 44px;
@@ -908,7 +964,7 @@ button {
 
   .user-chip {
     justify-content: center;
-    width: 100%;
+    flex: 1;
   }
 
   .hero-section {
@@ -938,6 +994,20 @@ button {
 
   .modal-dialog__actions {
     flex-direction: column;
+  }
+
+  .post-management__actions,
+  .delete-form {
+    grid-template-columns: 1fr;
+  }
+
+  .post-management__actions {
+    flex-direction: column;
+  }
+
+  .post-management__actions .secondary-button,
+  .delete-form .secondary-button {
+    width: 100%;
   }
 
   .board-page-header {

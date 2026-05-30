@@ -3,17 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { getAuthQuery, getHrefWithAuth } from "@/lib/auth";
 import { getServerViewer } from "@/lib/auth-server";
-import { boardConfigs, getBoardByKey, getBoardPosts } from "@/lib/boards";
+import { getBoard, getBoardPostsForList } from "@/lib/board-data";
+import { boardConfigs } from "@/lib/boards";
+
+export const dynamic = "force-dynamic";
 
 type BoardPageProps = {
   params: Promise<{
     boardKey: string;
-  }>;
-  searchParams?: Promise<{
-    login?: string;
-    role?: string;
   }>;
 };
 
@@ -23,18 +21,16 @@ export function generateStaticParams() {
   }));
 }
 
-export default async function BoardPage({ params, searchParams }: BoardPageProps) {
+export default async function BoardPage({ params }: BoardPageProps) {
   const { boardKey } = await params;
-  const query = await searchParams;
-  const board = getBoardByKey(boardKey);
+  const board = await getBoard(boardKey);
 
   if (!board) {
     notFound();
   }
 
-  const viewer = await getServerViewer(query);
-  const authQuery = getAuthQuery(viewer);
-  const posts = getBoardPosts(board, { viewerId: viewer?.id });
+  const viewer = await getServerViewer();
+  const posts = await getBoardPostsForList(board, viewer);
 
   return (
     <main className="app-shell">
@@ -46,7 +42,7 @@ export default async function BoardPage({ params, searchParams }: BoardPageProps
           <h1 id="board-title">{board.title}</h1>
           <p>{board.description}</p>
         </div>
-        <Link className="text-link" href={`/${authQuery}`}>
+        <Link className="text-link" href="/">
           메인으로
         </Link>
       </section>
@@ -55,9 +51,9 @@ export default async function BoardPage({ params, searchParams }: BoardPageProps
         <section className="notice-panel" aria-live="polite">
           <LockKeyhole aria-hidden="true" size={24} />
           <h2>로그인을 하지 않으면 볼 수 없습니다</h2>
-          <p>게시판의 글 목록을 보려면 먼저 로그인해 주세요. 메인화면의 로그인 미리보기로 접근 상태를 확인할 수 있습니다.</p>
-          <Link className="text-link" href="/?login=1">
-            로그인 미리보기
+          <p>게시판의 글 목록을 보려면 먼저 로그인해 주세요.</p>
+          <Link className="text-link" href="/login">
+            로그인하러 가기
           </Link>
         </section>
       ) : (
@@ -67,7 +63,7 @@ export default async function BoardPage({ params, searchParams }: BoardPageProps
               <li className={post.isLocked ? "post-item post-item--locked" : "post-item"} key={post.id}>
                 <Link
                   className="post-item__link"
-                  href={post.isLocked ? "/login" : getHrefWithAuth(`/boards/${board.key}/${post.id}`, viewer)}
+                  href={post.isLocked ? "/login" : `/boards/${board.key}/${post.id}`}
                 >
                   <span className="post-item__title">
                     {post.isLocked ? <LockKeyhole aria-hidden="true" size={16} /> : null}

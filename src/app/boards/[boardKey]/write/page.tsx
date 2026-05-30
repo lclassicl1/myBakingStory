@@ -3,17 +3,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/page-header";
-import { canCreatePost, getAuthQuery } from "@/lib/auth";
+import { createPost } from "@/app/boards/actions";
+import { canCreatePost } from "@/lib/auth";
 import { getServerViewer } from "@/lib/auth-server";
-import { boardConfigs, getBoardByKey } from "@/lib/boards";
+import { getBoard } from "@/lib/board-data";
+import { boardConfigs } from "@/lib/boards";
+
+export const dynamic = "force-dynamic";
 
 type BoardWritePageProps = {
   params: Promise<{
     boardKey: string;
   }>;
   searchParams?: Promise<{
-    login?: string;
-    role?: string;
+    message?: string;
   }>;
 };
 
@@ -28,14 +31,13 @@ export function generateStaticParams() {
 export default async function BoardWritePage({ params, searchParams }: BoardWritePageProps) {
   const { boardKey } = await params;
   const query = await searchParams;
-  const board = getBoardByKey(boardKey);
+  const board = await getBoard(boardKey);
 
   if (!board || !board.allowsWriting) {
     notFound();
   }
 
-  const viewer = await getServerViewer(query);
-  const authQuery = getAuthQuery(viewer);
+  const viewer = await getServerViewer();
   const canWrite = canCreatePost(board, viewer);
 
   return (
@@ -48,7 +50,7 @@ export default async function BoardWritePage({ params, searchParams }: BoardWrit
           <h1 id="write-title">{board.title} 글쓰기</h1>
           <p>작성 권한을 확인한 뒤 게시글 입력 화면으로 진입합니다.</p>
         </div>
-        <Link className="text-link" href={`${board.href}${authQuery}`}>
+        <Link className="text-link" href={board.href}>
           게시판으로
         </Link>
       </section>
@@ -58,8 +60,8 @@ export default async function BoardWritePage({ params, searchParams }: BoardWrit
           <LockKeyhole aria-hidden="true" size={24} />
           <h2>로그인을 하지 않으면 글을 작성할 수 없습니다</h2>
           <p>글쓰기는 로그인한 사용자에게만 열립니다. 공지사항은 운영자 권한이 필요합니다.</p>
-          <Link className="text-link" href="/?login=1">
-            로그인 미리보기
+          <Link className="text-link" href="/login">
+            로그인하러 가기
           </Link>
         </section>
       ) : !canWrite ? (
@@ -67,30 +69,33 @@ export default async function BoardWritePage({ params, searchParams }: BoardWrit
           <LockKeyhole aria-hidden="true" size={24} />
           <h2>글쓰기 권한이 없습니다</h2>
           <p>공지사항은 사이트 운영자만 작성할 수 있습니다. 운영자 계정으로 다시 확인해 주세요.</p>
-          <Link className="text-link" href="/?login=1&role=admin">
-            운영자 미리보기
-          </Link>
         </section>
       ) : (
-        <section className="write-panel" aria-label={`${board.title} 글쓰기 입력`}>
+        <form action={createPost} className="write-panel" aria-label={`${board.title} 글쓰기 입력`}>
+          <input name="boardKey" type="hidden" value={board.key} />
           <div className="write-panel__title">
             <PenLine aria-hidden="true" size={22} />
             <h2>새 글 작성</h2>
           </div>
           <label className="form-field">
             <span>제목</span>
-            <input type="text" placeholder={`${board.title}에 올릴 제목을 입력하세요`} />
+            <input maxLength={120} name="title" required type="text" placeholder={`${board.title}에 올릴 제목을 입력하세요`} />
           </label>
           <label className="form-field">
             <span>내용</span>
-            <textarea placeholder="베이킹 이야기를 자세히 적어주세요" rows={8} />
+            <textarea maxLength={20000} name="content" required placeholder="베이킹 이야기를 자세히 적어주세요" rows={8} />
           </label>
+          {query?.message ? (
+            <p className="inline-notice" role="status">
+              {query.message}
+            </p>
+          ) : null}
           <div className="form-actions">
-            <button className="primary-button" type="button">
-              등록 준비 중
+            <button className="primary-button" type="submit">
+              등록하기
             </button>
           </div>
-        </section>
+        </form>
       )}
     </main>
   );
