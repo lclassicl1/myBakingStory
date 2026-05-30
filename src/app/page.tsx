@@ -26,14 +26,10 @@ export default async function Home({ searchParams }: HomeProps) {
             공지, 레시피, 이벤트와 커뮤니티 글을 한 화면에서 확인하고 로그인 후 바로 참여할 수 있습니다.
           </p>
         </div>
-        <div className="hero-section__panel" aria-label="메인화면 표시 기준">
-          <div className="hero-section__swatches" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
-          <strong>Warm, soft, mobile-first</strong>
-          <p>게시판 {boardConfigs.length}개 · 최신순 {MAIN_PREVIEW_LIMIT}개 · {viewer ? "내 레시피 표시 중" : "로그인 필요"}</p>
+        <div className="home-summary" aria-label="메인화면 표시 기준">
+          <span>게시판 {boardConfigs.length}개</span>
+          <span>최신순 {MAIN_PREVIEW_LIMIT}개</span>
+          <span>{viewer ? "내 레시피 표시 중" : "로그인 후 참여 가능"}</span>
         </div>
       </section>
 

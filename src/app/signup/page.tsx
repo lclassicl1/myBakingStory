@@ -15,7 +15,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
 
   return (
     <main className="app-shell">
-      <PageHeader activeAuth="login" />
+      <PageHeader activeAuth="signup" />
 
       <section className="auth-layout" aria-labelledby="signup-title">
         <div className="auth-copy">

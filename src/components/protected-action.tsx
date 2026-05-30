@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useId, useState, type ReactNode } from "react";
-import { X } from "lucide-react";
+import { LockKeyhole, X } from "lucide-react";
 
 type ProtectedActionProps = {
   actionHref?: string;
@@ -13,7 +13,7 @@ type ProtectedActionProps = {
   message: string;
   children: ReactNode;
   className?: string;
-  icon?: string;
+  icon?: ReactNode;
   lockedClassName?: string;
   modalTitle?: string;
   modalTone?: "login" | "permission" | "private";
@@ -30,7 +30,7 @@ export function ProtectedAction({
   message,
   children,
   className,
-  icon = "L",
+  icon = <LockKeyhole aria-hidden="true" size={24} />,
   lockedClassName,
   modalTitle,
   modalTone = "login",

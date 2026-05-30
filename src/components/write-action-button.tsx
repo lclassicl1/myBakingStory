@@ -1,13 +1,14 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { ProtectedAction } from "@/components/protected-action";
 
 type WriteActionButtonProps = {
   canWrite: boolean;
   href: string;
-  icon: string;
+  icon: ReactNode;
   label: string;
   message: string;
   modalTone?: "login" | "permission" | "private";
