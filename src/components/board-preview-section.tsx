@@ -1,4 +1,14 @@
-import { ArrowRight, LockKeyhole, MessageCircle } from "lucide-react";
+import {
+  ArrowRight,
+  ChefHat,
+  Lightbulb,
+  LockKeyhole,
+  Megaphone,
+  MessageCircle,
+  NotebookTabs,
+  PartyPopper,
+  type LucideIcon,
+} from "lucide-react";
 
 import { canCreatePost, getHrefWithAuth, type Viewer } from "@/lib/auth";
 import type { BoardConfig, PostPreview } from "@/lib/boards";
@@ -11,13 +21,13 @@ type BoardPreviewSectionProps = {
   viewer?: Viewer;
 };
 
-const boardIconMap: Record<BoardConfig["key"], string> = {
-  notice: "!",
-  "public-recipes": "R",
-  "private-recipes": "L",
-  free: "C",
-  events: "E",
-  suggestions: "S",
+const boardIconMap: Record<BoardConfig["key"], LucideIcon> = {
+  notice: Megaphone,
+  "public-recipes": ChefHat,
+  "private-recipes": NotebookTabs,
+  free: MessageCircle,
+  events: PartyPopper,
+  suggestions: Lightbulb,
 };
 
 const boardModalToneMap: Record<BoardConfig["key"], "login" | "permission" | "private"> = {
@@ -36,7 +46,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
   const canWrite = canCreatePost(board, viewer);
   const canRead = Boolean(viewer);
   const readRequiredMessage = "로그인을 하지 않으면 볼 수 없습니다.";
-  const boardIcon = boardIconMap[board.key];
+  const BoardIcon = boardIconMap[board.key];
   const boardModalTone = boardModalToneMap[board.key];
   const writeRequiredMessage = !viewer
     ? "로그인을 하지 않으면 글을 작성할 수 없습니다."
@@ -47,7 +57,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
       <div className="board-card__header">
         <div className="board-card__identity">
           <span className={`board-card__mark board-card__mark--${board.key}`} aria-hidden="true">
-            {boardIcon}
+            <BoardIcon size={20} />
           </span>
           <div>
             <h2 className="board-card__title" id={`${board.key}-title`}>
@@ -64,7 +74,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
               label={`${board.title} 글쓰기`}
               message={writeRequiredMessage}
               modalTone={!viewer ? boardModalTone : "permission"}
-              icon={boardIcon}
+              icon={<BoardIcon aria-hidden="true" size={24} />}
             />
           ) : null}
           <ProtectedAction
@@ -72,7 +82,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
             canAccess={canRead}
             className="icon-link"
             href={boardHref}
-            icon={boardIcon}
+            icon={<BoardIcon aria-hidden="true" size={24} />}
             label={`${board.title} 전체보기`}
             lockedClassName="icon-link icon-link--muted"
             message={readRequiredMessage}
@@ -101,7 +111,13 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
               }
               modalTitle={post.isLocked ? "비공개 레시피예요" : "로그인이 필요해요"}
               modalTone={post.isLocked ? "private" : boardModalTone}
-              icon={boardIcon}
+              icon={
+                post.isLocked ? (
+                  <LockKeyhole aria-hidden="true" size={24} />
+                ) : (
+                  <BoardIcon aria-hidden="true" size={24} />
+                )
+              }
             >
               <span className="post-item__title">
                 {post.isLocked ? <LockKeyhole aria-hidden="true" size={16} /> : null}

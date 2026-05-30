@@ -114,6 +114,7 @@
 
 ## 향후 확장 고려사항
 
+- 새 기능은 [DB 연동 개발 가이드](./DB_INTEGRATION_GUIDE.md)를 기준으로 DB 테이블, RLS 정책, migration SQL, server action/API, UI 연결을 함께 설계한다.
 - Supabase 인증 연동
 - 게시판별 실제 DB 데이터 연동
 - 로그인 사용자별 `나만의 레시피` 필터링
