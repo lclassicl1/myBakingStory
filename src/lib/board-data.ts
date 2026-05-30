@@ -36,6 +36,7 @@ type PostRow = {
   content: string;
   comment_count: number;
   created_at: string;
+  updated_at: string;
 };
 
 type PostWithBoardRow = PostRow & {
@@ -80,6 +81,7 @@ function toPostPreview(row: PostWithBoardRow, boardKey: string): PostPreview {
     author: getAuthorName(row),
     content: row.content,
     createdAt: formatDate(row.created_at),
+    updatedAt: formatDate(row.updated_at),
     commentCount: row.comment_count,
     ownerId: row.author_id,
   };
@@ -141,7 +143,7 @@ export async function getBoardPreviewPosts(board: BoardConfig, viewer?: Viewer, 
 
   const query = supabase
     .from("posts")
-    .select("id, author_id, author_display_name, title, content, comment_count, created_at")
+    .select("id, author_id, author_display_name, title, content, comment_count, created_at, updated_at")
     .eq("board_id", board.id)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
@@ -180,7 +182,7 @@ export async function getBoardPostsForList(board: BoardConfig, viewer?: Viewer) 
 
   const query = supabase
     .from("posts")
-    .select("id, author_id, author_display_name, title, content, comment_count, created_at")
+    .select("id, author_id, author_display_name, title, content, comment_count, created_at, updated_at")
     .eq("board_id", board.id)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
@@ -214,7 +216,7 @@ export async function getPostForDetail(board: BoardConfig, postId: string, viewe
 
   const { data, error } = await supabase
     .from("posts")
-    .select("id, author_id, author_display_name, title, content, comment_count, created_at")
+    .select("id, author_id, author_display_name, title, content, comment_count, created_at, updated_at")
     .eq("id", postId)
     .eq("board_id", board.id)
     .is("deleted_at", null)

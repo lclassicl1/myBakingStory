@@ -27,3 +27,11 @@ export function canCreatePost(board: BoardConfig, viewer?: Viewer) {
 
   return true;
 }
+
+export function canManagePost(postAuthorId?: string, viewer?: Viewer) {
+  if (!viewer || !postAuthorId) {
+    return false;
+  }
+
+  return viewer.role === "admin" || viewer.id === postAuthorId;
+}

@@ -66,5 +66,14 @@ Supabase Dashboard에서 다음 순서로 실행한다.
 - DB migration이 아직 적용되지 않았거나 조회가 실패하면 기존 mock 데이터로 fallback한다.
 - 게시판 목록과 게시글 상세는 Supabase DB를 우선 조회한다.
 - 글쓰기 화면은 `createPost` server action으로 `public.posts`에 insert한다.
+- 게시글 수정은 `updatePost` server action으로 제목과 본문을 update한다.
+- 게시글 삭제는 `deletePost` server action으로 `deleted_at`을 채우는 soft delete로 처리한다.
 - 인증 상태는 Supabase session과 `public.profiles` 기준으로 판단한다.
 
+## 게시글 수정/삭제 정책
+
+- 작성자 본인 또는 운영자만 수정/삭제 버튼을 볼 수 있다.
+- 직접 수정 URL로 접근해도 server action과 화면에서 다시 권한을 검증한다.
+- 삭제는 실제 row 삭제가 아니라 `posts.deleted_at = now()`로 처리한다.
+- 앱의 목록/상세 조회는 `deleted_at is null` 조건을 사용하므로 삭제된 글은 보이지 않는다.
+- 삭제 확인란에 `삭제`를 입력해야 soft delete action이 실행된다.

@@ -27,6 +27,7 @@ export type PostPreview = {
   author: string;
   content?: string;
   createdAt: string;
+  updatedAt?: string;
   commentCount: number;
   ownerId?: string;
   isLocked?: boolean;
