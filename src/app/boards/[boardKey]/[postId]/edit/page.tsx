@@ -40,6 +40,9 @@ export default async function EditPostPage({ params, searchParams }: EditPostPag
 
   const post = await getPostForDetail(board, postId, viewer);
   const canEdit = canManagePost(post?.ownerId, viewer);
+  const formBoardKey = post?.sourceBoardKey ?? board.key;
+  const postHref = post ? `/boards/${formBoardKey}/${post.id}` : board.href;
+  const showRecipeVisibility = formBoardKey === "private-recipes";
 
   return (
     <main className="app-shell">
@@ -51,7 +54,7 @@ export default async function EditPostPage({ params, searchParams }: EditPostPag
           <h1 id="edit-title">{board.title} 글 수정</h1>
           <p>작성자 본인 또는 운영자만 게시글을 수정할 수 있습니다.</p>
         </div>
-        <Link className="text-link" href={post ? `${board.href}/${post.id}` : board.href}>
+        <Link className="text-link" href={postHref}>
           돌아가기
         </Link>
       </section>
@@ -79,7 +82,7 @@ export default async function EditPostPage({ params, searchParams }: EditPostPag
         </section>
       ) : (
         <form action={updatePost} className="write-panel" aria-label={`${board.title} 글 수정 입력`}>
-          <input name="boardKey" type="hidden" value={board.key} />
+          <input name="boardKey" type="hidden" value={formBoardKey} />
           <input name="postId" type="hidden" value={post.id} />
           <div className="write-panel__title">
             <PenLine aria-hidden="true" size={22} />
@@ -107,6 +110,23 @@ export default async function EditPostPage({ params, searchParams }: EditPostPag
               rows={8}
             />
           </label>
+          {showRecipeVisibility ? (
+            <div className="visibility-switch-field">
+              <span>공개 설정</span>
+              <label className="form-switch">
+                <input
+                  defaultChecked={post.visibility === "public"}
+                  name="recipeVisibility"
+                  type="checkbox"
+                  value="public"
+                />
+                <span className="form-switch__track" aria-hidden="true">
+                  <span className="form-switch__thumb" />
+                </span>
+                <span className="form-switch__text">모두의 레시피에 공개</span>
+              </label>
+            </div>
+          ) : null}
           {query?.message ? (
             <p className="inline-notice" role="status">
               {query.message}

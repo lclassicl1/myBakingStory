@@ -29,8 +29,13 @@ export type PostPreview = {
   createdAt: string;
   updatedAt?: string;
   commentCount: number;
+  likeCount: number;
   ownerId?: string;
   isLocked?: boolean;
+  isUnavailable?: boolean;
+  sourceBoardKey?: BoardKey;
+  sortAt?: string;
+  visibility?: BoardVisibility;
 };
 
 export const MAIN_PREVIEW_LIMIT = 4;
@@ -51,6 +56,8 @@ export const boardConfigs: BoardConfig[] = [
     description: "함께 나누는 베이킹 레시피",
     href: "/boards/public-recipes",
     visibility: "public",
+    allowsWriting: true,
+    writePermission: "authenticated",
   },
   {
     key: "private-recipes",
@@ -63,7 +70,7 @@ export const boardConfigs: BoardConfig[] = [
   },
   {
     key: "free",
-    title: "자유게시판",
+    title: "일상 이야기",
     description: "베이킹 이야기와 일상 대화",
     href: "/boards/free",
     visibility: "public",
@@ -96,6 +103,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-23",
     commentCount: 3,
+    likeCount: 0,
   },
   {
     id: "notice-3",
@@ -104,6 +112,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-22",
     commentCount: 1,
+    likeCount: 0,
   },
   {
     id: "notice-2",
@@ -112,6 +121,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-21",
     commentCount: 0,
+    likeCount: 0,
   },
   {
     id: "notice-1",
@@ -120,6 +130,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-20",
     commentCount: 7,
+    likeCount: 0,
   },
   {
     id: "public-recipes-5",
@@ -128,6 +139,7 @@ const postPreviews: PostPreview[] = [
     author: "greenoven",
     createdAt: "2026-05-23",
     commentCount: 12,
+    likeCount: 0,
   },
   {
     id: "public-recipes-4",
@@ -136,6 +148,7 @@ const postPreviews: PostPreview[] = [
     author: "crumbs",
     createdAt: "2026-05-22",
     commentCount: 8,
+    likeCount: 0,
   },
   {
     id: "public-recipes-3",
@@ -144,6 +157,7 @@ const postPreviews: PostPreview[] = [
     author: "bake-lab",
     createdAt: "2026-05-21",
     commentCount: 16,
+    likeCount: 0,
   },
   {
     id: "public-recipes-2",
@@ -152,6 +166,7 @@ const postPreviews: PostPreview[] = [
     author: "madeleine",
     createdAt: "2026-05-20",
     commentCount: 5,
+    likeCount: 0,
   },
   {
     id: "private-recipes-4",
@@ -160,6 +175,7 @@ const postPreviews: PostPreview[] = [
     author: "나",
     createdAt: "2026-05-23",
     commentCount: 0,
+    likeCount: 0,
     ownerId: "demo-user",
   },
   {
@@ -169,6 +185,7 @@ const postPreviews: PostPreview[] = [
     author: "나",
     createdAt: "2026-05-22",
     commentCount: 0,
+    likeCount: 0,
     ownerId: "demo-user",
   },
   {
@@ -178,6 +195,7 @@ const postPreviews: PostPreview[] = [
     author: "나",
     createdAt: "2026-05-21",
     commentCount: 0,
+    likeCount: 0,
     ownerId: "demo-user",
   },
   {
@@ -187,6 +205,7 @@ const postPreviews: PostPreview[] = [
     author: "나",
     createdAt: "2026-05-20",
     commentCount: 0,
+    likeCount: 0,
     ownerId: "demo-user",
   },
   {
@@ -196,6 +215,7 @@ const postPreviews: PostPreview[] = [
     author: "oven-note",
     createdAt: "2026-05-23",
     commentCount: 9,
+    likeCount: 0,
   },
   {
     id: "free-3",
@@ -204,6 +224,7 @@ const postPreviews: PostPreview[] = [
     author: "toolbox",
     createdAt: "2026-05-22",
     commentCount: 21,
+    likeCount: 0,
   },
   {
     id: "free-2",
@@ -212,6 +233,7 @@ const postPreviews: PostPreview[] = [
     author: "starter",
     createdAt: "2026-05-21",
     commentCount: 14,
+    likeCount: 0,
   },
   {
     id: "free-1",
@@ -220,6 +242,7 @@ const postPreviews: PostPreview[] = [
     author: "market",
     createdAt: "2026-05-20",
     commentCount: 6,
+    likeCount: 0,
   },
   {
     id: "events-4",
@@ -228,6 +251,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-23",
     commentCount: 4,
+    likeCount: 0,
   },
   {
     id: "events-3",
@@ -236,6 +260,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-22",
     commentCount: 11,
+    likeCount: 0,
   },
   {
     id: "events-2",
@@ -244,6 +269,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-21",
     commentCount: 18,
+    likeCount: 0,
   },
   {
     id: "events-1",
@@ -252,6 +278,7 @@ const postPreviews: PostPreview[] = [
     author: "운영팀",
     createdAt: "2026-05-20",
     commentCount: 2,
+    likeCount: 0,
   },
   {
     id: "suggestions-4",
@@ -260,6 +287,7 @@ const postPreviews: PostPreview[] = [
     author: "flourish",
     createdAt: "2026-05-23",
     commentCount: 5,
+    likeCount: 0,
   },
   {
     id: "suggestions-3",
@@ -268,6 +296,7 @@ const postPreviews: PostPreview[] = [
     author: "scale-up",
     createdAt: "2026-05-22",
     commentCount: 13,
+    likeCount: 0,
   },
   {
     id: "suggestions-2",
@@ -276,6 +305,7 @@ const postPreviews: PostPreview[] = [
     author: "bookmark",
     createdAt: "2026-05-21",
     commentCount: 7,
+    likeCount: 0,
   },
   {
     id: "suggestions-1",
@@ -284,6 +314,7 @@ const postPreviews: PostPreview[] = [
     author: "gallery",
     createdAt: "2026-05-20",
     commentCount: 3,
+    likeCount: 0,
   },
 ];
 
@@ -294,6 +325,7 @@ const lockedRecipePreviews: PostPreview[] = Array.from({ length: 4 }, (_, index)
   author: "비공개",
   createdAt: "",
   commentCount: 0,
+  likeCount: 0,
   isLocked: true,
 }));
 

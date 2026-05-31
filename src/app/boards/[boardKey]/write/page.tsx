@@ -39,6 +39,7 @@ export default async function BoardWritePage({ params, searchParams }: BoardWrit
 
   const viewer = await getServerViewer();
   const canWrite = canCreatePost(board, viewer);
+  const showRecipeVisibility = board.key === "private-recipes";
 
   return (
     <main className="app-shell">
@@ -85,6 +86,18 @@ export default async function BoardWritePage({ params, searchParams }: BoardWrit
             <span>내용</span>
             <textarea maxLength={20000} name="content" required placeholder="베이킹 이야기를 자세히 적어주세요" rows={8} />
           </label>
+          {showRecipeVisibility ? (
+            <div className="visibility-switch-field">
+              <span>공개 설정</span>
+              <label className="form-switch">
+                <input name="recipeVisibility" type="checkbox" value="public" />
+                <span className="form-switch__track" aria-hidden="true">
+                  <span className="form-switch__thumb" />
+                </span>
+                <span className="form-switch__text">모두의 레시피에 공개</span>
+              </label>
+            </div>
+          ) : null}
           {query?.message ? (
             <p className="inline-notice" role="status">
               {query.message}
