@@ -1,7 +1,7 @@
 import { BoardPreviewSection } from "@/components/board-preview-section";
 import { PageHeader } from "@/components/page-header";
 import { getServerViewer } from "@/lib/auth-server";
-import { getBoardPreviewPosts, getBoards } from "@/lib/board-data";
+import { getBoardPreviewPosts, getBoards, hasUnreadTodayPosts } from "@/lib/board-data";
 import { MAIN_PREVIEW_LIMIT } from "@/lib/boards";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +12,7 @@ export default async function Home() {
   const boardPreviews = await Promise.all(
     boards.map(async (board) => ({
       board,
+      hasNewPosts: await hasUnreadTodayPosts(board, viewer),
       posts: await getBoardPreviewPosts(board, viewer),
     })),
   );
@@ -44,9 +45,10 @@ export default async function Home() {
         </div>
 
         <div className="board-grid">
-          {boardPreviews.map(({ board, posts }) => (
+          {boardPreviews.map(({ board, hasNewPosts, posts }) => (
             <BoardPreviewSection
               board={board}
+              hasNewPosts={hasNewPosts}
               key={board.key}
               posts={posts}
               viewer={viewer}

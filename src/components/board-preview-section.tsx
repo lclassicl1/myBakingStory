@@ -17,6 +17,7 @@ import { WriteActionButton } from "@/components/write-action-button";
 
 type BoardPreviewSectionProps = {
   board: BoardConfig;
+  hasNewPosts?: boolean;
   posts: PostPreview[];
   viewer?: Viewer;
 };
@@ -52,7 +53,7 @@ function getBoardModalTone(boardKey: BoardConfig["key"]): "login" | "permission"
   return "login";
 }
 
-export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectionProps) {
+export function BoardPreviewSection({ board, hasNewPosts = false, posts, viewer }: BoardPreviewSectionProps) {
   const boardHref = board.href;
   const writeHref = `${board.href}/write`;
   const showWriteButton = Boolean(board.allowsWriting);
@@ -74,6 +75,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
           <div>
             <h2 className="board-card__title" id={`${board.key}-title`}>
               {board.title}
+              {hasNewPosts ? <span className="new-badge" aria-label="읽지 않은 새 글">N</span> : null}
             </h2>
             <p className="board-card__description">{board.description}</p>
           </div>
@@ -109,22 +111,31 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
 
       <ul className="post-list">
         {posts.map((post) => (
-          <li className={post.isLocked ? "post-item post-item--locked" : "post-item"} key={post.id}>
+          <li className={post.isLocked || post.isUnavailable ? "post-item post-item--locked" : "post-item"} key={post.id}>
             <ProtectedAction
-              actionHref="/login"
-              canAccess={canRead && !post.isLocked}
+              actionHref={post.isUnavailable ? undefined : "/login"}
+              canAccess={canRead && !post.isLocked && !post.isUnavailable}
               className="post-item__link"
               href={`${board.href}/${post.id}`}
               label={`${post.title} 글 보기`}
               message={
-                post.isLocked
-                  ? "나만의 레시피는 작성자 본인에게만 보여요. 로그인 후 내 레시피 목록에서 확인할 수 있습니다."
-                  : readRequiredMessage
+                post.isUnavailable
+                  ? "작성자가 비공개로 전환한 레시피입니다."
+                  : post.isLocked
+                    ? "나만의 레시피는 작성자 본인에게만 보여요. 로그인 후 내 레시피 목록에서 확인할 수 있습니다."
+                    : readRequiredMessage
               }
-              modalTitle={post.isLocked ? "비공개 레시피예요" : "로그인이 필요해요"}
-              modalTone={post.isLocked ? "private" : boardModalTone}
+              modalTitle={
+                post.isUnavailable
+                  ? "비공개된 레시피입니다"
+                  : post.isLocked
+                    ? "비공개 레시피예요"
+                    : "로그인이 필요해요"
+              }
+              modalTone={post.isLocked || post.isUnavailable ? "private" : boardModalTone}
+              secondaryLabel={post.isUnavailable ? "닫기" : undefined}
               icon={
-                post.isLocked ? (
+                post.isLocked || post.isUnavailable ? (
                   <LockKeyhole aria-hidden="true" size={24} />
                 ) : (
                   getBoardIcon(board.key, 24)
@@ -132,7 +143,7 @@ export function BoardPreviewSection({ board, posts, viewer }: BoardPreviewSectio
               }
             >
               <span className="post-item__title">
-                {post.isLocked ? <LockKeyhole aria-hidden="true" size={16} /> : null}
+                {post.isLocked || post.isUnavailable ? <LockKeyhole aria-hidden="true" size={16} /> : null}
                 {post.title}
               </span>
               <span className="post-item__meta">

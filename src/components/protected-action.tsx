@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState, type ReactNode } from "react";
+import { useId, useState, type AriaRole, type ReactNode } from "react";
 import { LockKeyhole, X } from "lucide-react";
 
 type ProtectedActionProps = {
@@ -17,6 +17,7 @@ type ProtectedActionProps = {
   lockedClassName?: string;
   modalTitle?: string;
   modalTone?: "login" | "permission" | "private";
+  role?: AriaRole;
   secondaryLabel?: string;
   title?: string;
 };
@@ -34,6 +35,7 @@ export function ProtectedAction({
   lockedClassName,
   modalTitle,
   modalTone = "login",
+  role,
   secondaryLabel = "지금은 둘러보기",
   title,
 }: ProtectedActionProps) {
@@ -42,7 +44,7 @@ export function ProtectedAction({
 
   if (canAccess) {
     return (
-      <Link className={className} href={href} aria-label={label} title={title}>
+      <Link className={className} href={href} aria-label={label} role={role} title={title}>
         {children}
       </Link>
     );
@@ -54,6 +56,7 @@ export function ProtectedAction({
         className={lockedClassName ?? className}
         type="button"
         aria-label={label}
+        role={role}
         title={title ?? "로그인 필요"}
         onClick={() => setIsOpen(true)}
       >

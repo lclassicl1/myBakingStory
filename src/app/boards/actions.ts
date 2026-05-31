@@ -1,12 +1,21 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 import { canCreatePost, canManagePost } from "@/lib/auth";
 import { getServerViewer } from "@/lib/auth-server";
 import { getBoard, getPostForDetail } from "@/lib/board-data";
 import { withMessage } from "@/lib/redirect-message";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+function getRecipeVisibility(formData: FormData) {
+  return formData.getAll("recipeVisibility").map(String).includes("public") ? "public" : "owner-only";
+}
+
+function isPrivateRecipeBoard(boardKey: string) {
+  return boardKey === "private-recipes";
+}
 
 function getCreatePostErrorMessage(message: string) {
   const lowerMessage = message.toLowerCase();
@@ -46,11 +55,46 @@ function getDeletePostErrorMessage(message: string) {
   return "게시글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
+async function syncRecipePublication(postId: string, visibility: "public" | "owner-only") {
+  const supabase = await createSupabaseServerClient();
+
+  if (visibility === "public") {
+    const { error } = await supabase
+      .from("recipe_publications")
+      .upsert(
+        {
+          hidden_at: null,
+          published_at: new Date().toISOString(),
+          source_post_id: postId,
+        },
+        {
+          onConflict: "source_post_id",
+        },
+      );
+
+    return error;
+  }
+
+  const { error } = await supabase
+    .from("recipe_publications")
+    .update({
+      hidden_at: new Date().toISOString(),
+    })
+    .eq("source_post_id", postId);
+
+  return error;
+}
+
+function getVisibilityToggleValue(formData: FormData) {
+  return String(formData.get("visibility") ?? "owner-only") === "public" ? "public" : "owner-only";
+}
+
 export async function createPost(formData: FormData) {
   const boardKey = String(formData.get("boardKey") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const board = await getBoard(boardKey);
+  const visibility = isPrivateRecipeBoard(boardKey) ? getRecipeVisibility(formData) : "public";
 
   if (!board || !board.allowsWriting) {
     redirect(withMessage("/", "글을 작성할 수 없는 게시판입니다."));
@@ -83,7 +127,7 @@ export async function createPost(formData: FormData) {
       board_id: board.id,
       content,
       title,
-      visibility: board.visibility === "owner-only" ? "owner-only" : "public",
+      visibility,
     })
     .select("id")
     .single();
@@ -98,6 +142,20 @@ export async function createPost(formData: FormData) {
     redirect(withMessage(`/boards/${boardKey}/write`, getCreatePostErrorMessage(error?.message ?? "")));
   }
 
+  if (isPrivateRecipeBoard(boardKey)) {
+    const publicationError = await syncRecipePublication(data.id, visibility);
+
+    if (publicationError) {
+      console.error("Supabase recipe publication sync failed after insert", {
+        boardKey,
+        code: publicationError.code,
+        message: publicationError.message,
+      });
+
+      redirect(withMessage(`/boards/${boardKey}/${data.id}`, "레시피 공개 설정 저장에 실패했습니다. 수정 화면에서 다시 시도해 주세요."));
+    }
+  }
+
   redirect(`/boards/${boardKey}/${data.id}`);
 }
 
@@ -107,6 +165,7 @@ export async function updatePost(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const board = await getBoard(boardKey);
+  const visibility = isPrivateRecipeBoard(boardKey) ? getRecipeVisibility(formData) : "public";
 
   if (!board || !postId) {
     redirect(withMessage("/", "게시글 정보를 찾을 수 없습니다."));
@@ -138,6 +197,7 @@ export async function updatePost(formData: FormData) {
     .update({
       content,
       title,
+      visibility,
     })
     .eq("id", postId)
     .eq("board_id", board.id)
@@ -154,7 +214,91 @@ export async function updatePost(formData: FormData) {
     redirect(withMessage(`/boards/${boardKey}/${postId}/edit`, getUpdatePostErrorMessage(error.message)));
   }
 
+  if (isPrivateRecipeBoard(boardKey)) {
+    const publicationError = await syncRecipePublication(postId, visibility);
+
+    if (publicationError) {
+      console.error("Supabase recipe publication sync failed after update", {
+        boardKey,
+        code: publicationError.code,
+        message: publicationError.message,
+        postId,
+      });
+
+      redirect(withMessage(`/boards/${boardKey}/${postId}/edit`, "레시피 공개 설정 저장에 실패했습니다. 다시 시도해 주세요."));
+    }
+  }
+
   redirect(`/boards/${boardKey}/${postId}`);
+}
+
+export async function updateRecipeVisibility(formData: FormData) {
+  const boardKey = String(formData.get("boardKey") ?? "").trim();
+  const postId = String(formData.get("postId") ?? "").trim();
+  const returnPath = String(formData.get("returnPath") ?? `/boards/${boardKey}`).trim();
+  const visibility = getVisibilityToggleValue(formData);
+  const board = await getBoard(boardKey);
+
+  if (!board || !postId || !isPrivateRecipeBoard(boardKey)) {
+    redirect(withMessage(returnPath || "/", "공개 설정을 변경할 수 없는 게시글입니다."));
+  }
+
+  const viewer = await getServerViewer();
+
+  if (!viewer) {
+    redirect(withMessage(returnPath, "로그인을 하지 않으면 공개 설정을 변경할 수 없습니다."));
+  }
+
+  const post = await getPostForDetail(board, postId, viewer);
+
+  if (!post) {
+    redirect(withMessage(returnPath, "게시글이 없거나 접근 권한이 없습니다."));
+  }
+
+  if (!canManagePost(post.ownerId, viewer)) {
+    redirect(withMessage(returnPath, "공개 설정을 변경할 권한이 없습니다."));
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("posts")
+    .update({
+      visibility,
+    })
+    .eq("id", postId)
+    .eq("board_id", board.id)
+    .is("deleted_at", null);
+
+  if (error) {
+    console.error("Supabase recipe visibility update failed", {
+      boardKey,
+      code: error.code,
+      message: error.message,
+      postId,
+    });
+
+    redirect(withMessage(returnPath, getUpdatePostErrorMessage(error.message)));
+  }
+
+  const publicationError = await syncRecipePublication(postId, visibility);
+
+  if (publicationError) {
+    console.error("Supabase recipe publication sync failed after visibility toggle", {
+      boardKey,
+      code: publicationError.code,
+      message: publicationError.message,
+      postId,
+    });
+
+    redirect(withMessage(returnPath, "레시피 공개 설정 저장에 실패했습니다. 다시 시도해 주세요."));
+  }
+
+  revalidatePath("/");
+  revalidatePath("/boards/private-recipes");
+  revalidatePath("/boards/public-recipes");
+  revalidatePath(`/boards/private-recipes/${postId}`);
+  revalidatePath(`/boards/public-recipes/${postId}`);
+  redirect(returnPath);
 }
 
 export async function deletePost(formData: FormData) {

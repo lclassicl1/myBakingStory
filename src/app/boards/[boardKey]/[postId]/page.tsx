@@ -1,9 +1,11 @@
-import { LockKeyhole, MessageCircle, PenLine, Trash2 } from "lucide-react";
+import { Heart, LockKeyhole, MessageCircle, PenLine, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { deletePost } from "@/app/boards/actions";
 import { PageHeader } from "@/components/page-header";
+import { PostReadMarker } from "@/components/post-read-marker";
+import { RecipeVisibilityToggle } from "@/components/recipe-visibility-toggle";
 import { canManagePost } from "@/lib/auth";
 import { getServerViewer } from "@/lib/auth-server";
 import { getBoard, getPostForDetail } from "@/lib/board-data";
@@ -40,6 +42,8 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
 
   const post = await getPostForDetail(board, postId, viewer);
   const canManage = canManagePost(post?.ownerId, viewer);
+  const managementBoardKey = post?.sourceBoardKey ?? board.key;
+  const managementHref = post ? `/boards/${managementBoardKey}/${post.id}` : board.href;
 
   return (
     <main className="app-shell">
@@ -73,18 +77,31 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
         </section>
       ) : (
         <article className="write-panel">
+          <PostReadMarker postId={post.id} />
           <div className="post-detail__meta">
             <span>{post.author}</span>
             <time dateTime={post.createdAt}>{post.createdAt}</time>
             {post.updatedAt && post.updatedAt !== post.createdAt ? <span>수정 {post.updatedAt}</span> : null}
             <span className="post-item__comments">
+              <Heart aria-hidden="true" size={14} />
+              {post.likeCount}
+            </span>
+            <span className="post-item__comments">
               <MessageCircle aria-hidden="true" size={14} />
               {post.commentCount}
             </span>
           </div>
-          <p className="post-detail__body">
-            {post.content}
-          </p>
+          {post.isUnavailable ? (
+            <section className="notice-panel notice-panel--inline" aria-live="polite">
+              <LockKeyhole aria-hidden="true" size={24} />
+              <h2>비공개된 레시피입니다</h2>
+              <p>{post.content}</p>
+            </section>
+          ) : (
+            <p className="post-detail__body">
+              {post.content}
+            </p>
+          )}
           {query?.message ? (
             <p className="inline-notice" role="status">
               {query.message}
@@ -93,13 +110,20 @@ export default async function PostPage({ params, searchParams }: PostPageProps) 
           {canManage ? (
             <div className="post-management">
               <div className="post-management__actions">
-                <Link className="secondary-button" href={`${board.href}/${post.id}/edit`}>
+                {managementBoardKey === "private-recipes" ? (
+                  <RecipeVisibilityToggle
+                    postId={post.id}
+                    returnPath={`${managementHref}`}
+                    visibility={post.visibility}
+                  />
+                ) : null}
+                <Link className="secondary-button" href={`${managementHref}/edit`}>
                   <PenLine aria-hidden="true" size={16} />
                   수정
                 </Link>
               </div>
               <form action={deletePost} className="delete-form">
-                <input name="boardKey" type="hidden" value={board.key} />
+                <input name="boardKey" type="hidden" value={managementBoardKey} />
                 <input name="postId" type="hidden" value={post.id} />
                 <label className="form-field">
                   <span>삭제 확인</span>
